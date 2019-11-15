@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	port := os.Getenv("PORT")
-
+	port = "80"
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
@@ -26,10 +27,10 @@ func main() {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
 	})
 
-	router.GET("/Trans/:name", func(c *gin.Context) {
-		name := c.Param("name")
+	router.GET("/Trans/:text", func(c *gin.Context) {
+		text := c.Param("text")
 
-		resp, err := http.Get("http://translate.google.cn/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl=zh_TW&q=" + name)
+		resp, err := http.Get("http://translate.google.cn/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl=zh_TW&q=" + url.QueryEscape(text))
 		if err != nil {
 			// handle error
 		}
@@ -40,7 +41,7 @@ func main() {
 			// handle error
 		}
 
-		c.JSON(200, body)
+		c.JSON(200, string(body))
 	})
 
 	router.Run(":" + port)
