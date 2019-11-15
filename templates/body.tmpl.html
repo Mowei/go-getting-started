@@ -1,25 +1,26 @@
 <template>
-  <div class="card mb-1">
-      <div class="card-id" hidden></div>
-      <div class="card-body">
-          <a href="" class="title-link card-link">
-              <h6 class="card-title">title</h6>
-          </a>
-          <p class="card-text"></p>
-          <button class="translate-link btn btn-primary">翻譯</button>
-      </div>
-  </div>
+    <div class="card">
+        <div class="card-id" hidden></div>
+        <div class="card-body">
+            <a href="" class="title-link card-link">
+                <h6 class="card-title">title</h6>
+            </a>
+            <p class="card-text"></p>
+            <div class="card-ori-text" hidden></div>
+            <button class="translate-link btn btn-primary">翻譯</button>
+        </div>
+    </div>
 </template>
-<div>
-  <div class="card-deck">
-      <div id="news_group" style="width: 100%;"></div>
-  </div>
+<div class="container">
+    <div class="card-deck">
+        <div id="news_group" ></div>
+    </div>
 </div>
 <script>
   var count = 0;
   var MaxCount = 20;
+  
   $(function () {
-
       $.ajax({
           url: "/TopStories/" + MaxCount
       }).done(function (result) {
@@ -32,6 +33,10 @@
           for (var i = 0; i < cards.length; i++) {
             getCardInfo($(cards[i]));
           }
+
+          $("button").click(function(){
+            TransText(this);
+          });
       });
   });
 
@@ -55,16 +60,13 @@
   function setCardInfo(item,result) {
     var card_title = item.find(".card-title");
     card_title.text(card_title.text() + result.title);
+    item.find(".card-ori-text").text( result.title);
     item.find(".title-link").attr("href", result.url);
-
-    (item.find(".translate-link")[0]).onclick = function () {
-        getTrans(this, result.title);
-    }
   }
 
-  function getTrans(obj, str) {
+  function TransText(obj) {
       $.ajax({
-          url: "/Trans/" + str
+          url: "/Trans/" + encodeURIComponent($(obj).prevAll(".card-ori-text").text().replace("/","\\"))
       }).done(function (result) {
           $(obj).prevAll(".card-text").text(JSON.parse(result).sentences[0].trans);
       });
