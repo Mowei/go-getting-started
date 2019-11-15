@@ -1,0 +1,77 @@
+<template>
+
+  <div class="card mb-1">
+      <div class="card-body">
+          <a href="" class="title-link card-link">
+              <h6 class="card-title">title</h6>
+          </a>
+          <p class="card-text"></p>
+          <button class="translate-link btn btn-primary">翻譯</button>
+      </div>
+  </div>
+
+</template>
+<div class="container">
+  <div class="card-deck">
+      <div id="news_group" style="width: 100%;"></div>
+  </div>
+</div>
+<script>
+  var datas;
+  var count = 0;
+  $(function () {
+      topstories();
+  });
+
+  function showContent(result) {
+      var temp = document.getElementsByTagName("template")[0];
+      var clon = temp.content.cloneNode(true);
+      $(clon.children).find(".card-title").text(++count + ". " + result.title);
+      $(clon.children).find(".title-link").attr("href", result.url);
+
+      ($(clon.children).find(".translate-link")[0]).onclick = function () {
+          getTrans(this, result.title);
+      }
+      $("#news_group").append(clon)
+  }
+
+  function translate(str) {
+      $.ajax({
+          url: "/api/Trans/" + str,
+      }).done(function () {
+          $(this).addClass("done");
+      });
+  }
+
+  function topstories() {
+      $.ajax({
+          url: "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
+      }).done(function (result) {
+          console.log(result)
+          datas = result;
+          count = 0;
+          for (var i = 0; i < 20; i++) {
+              getItem(datas[i]);
+          }
+      });
+  }
+
+  function getItem(item) {
+      $.ajax({
+          url: "https://hacker-news.firebaseio.com/v0/item/" + item + ".json?print=pretty",
+          //async: false,
+      }).done(function (result) {
+          showContent(result);
+      });
+  }
+
+  function getTrans(obj, str) {
+      console.log($(obj).prevAll(".card-text"), str);
+      $.ajax({
+          url: "/Trans/" + str
+      }).done(function (result) {
+          console.log(JSON.parse(result));
+          $(obj).prevAll(".card-text").text(JSON.parse(result).sentences[0].trans);
+      });
+  }
+</script>
