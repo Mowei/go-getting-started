@@ -1,6 +1,6 @@
 <template>
-
   <div class="card mb-1">
+      <div class="card-id" hidden></div>
       <div class="card-body">
           <a href="" class="title-link card-link">
               <h6 class="card-title">title</h6>
@@ -9,7 +9,6 @@
           <button class="translate-link btn btn-primary">翻譯</button>
       </div>
   </div>
-
 </template>
 <div class="container">
   <div class="card-deck">
@@ -17,60 +16,56 @@
   </div>
 </div>
 <script>
-  var datas;
   var count = 0;
+  var MaxCount = 20;
   $(function () {
-      topstories();
-  });
 
-  function showContent(result) {
-      var temp = document.getElementsByTagName("template")[0];
-      var clon = temp.content.cloneNode(true);
-      $(clon.children).find(".card-title").text(++count + ". " + result.title);
-      $(clon.children).find(".title-link").attr("href", result.url);
-
-      ($(clon.children).find(".translate-link")[0]).onclick = function () {
-          getTrans(this, result.title);
-      }
-      $("#news_group").append(clon)
-  }
-
-  function translate(str) {
       $.ajax({
-          url: "/api/Trans/" + str,
-      }).done(function () {
-          $(this).addClass("done");
-      });
-  }
-
-  function topstories() {
-      $.ajax({
-          url: "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
+          url: "/TopStories/" + MaxCount
       }).done(function (result) {
-          console.log(result)
-          datas = result;
-          count = 0;
-          for (var i = 0; i < 20; i++) {
-              getItem(datas[i]);
+          
+          for (var i = 0; i < MaxCount; i++) {
+            setContentId(result[i]);
+          }
+
+          var cards = $(".card");
+          for (var i = 0; i < cards.length; i++) {
+            getCardInfo($(cards[i]));
           }
       });
+  });
+
+  function setContentId(result) {
+      var temp = document.getElementsByTagName("template")[0];
+      var clon = temp.content.cloneNode(true);
+      $(clon.children).find(".card-id").text(result);
+      $(clon.children).find(".card-title").text(++count + ". " );
+      $("#news_group").append(clon);
   }
 
-  function getItem(item) {
-      $.ajax({
-          url: "https://hacker-news.firebaseio.com/v0/item/" + item + ".json?print=pretty",
-          //async: false,
-      }).done(function (result) {
-          showContent(result);
-      });
+
+  function getCardInfo(item) {
+    $.ajax({
+        url: "https://hacker-news.firebaseio.com/v0/item/" + item.find(".card-id").text() + ".json?print=pretty",
+    }).done(function (result) {
+    setCardInfo(item,result);
+    });
+  }
+
+  function setCardInfo(item,result) {
+    var card_title = item.find(".card-title");
+    card_title.text(card_title.text() + result.title);
+    item.find(".title-link").attr("href", result.url);
+
+    (item.find(".translate-link")[0]).onclick = function () {
+        getTrans(this, result.title);
+    }
   }
 
   function getTrans(obj, str) {
-      console.log($(obj).prevAll(".card-text"), str);
       $.ajax({
           url: "/Trans/" + str
       }).done(function (result) {
-          console.log(JSON.parse(result));
           $(obj).prevAll(".card-text").text(JSON.parse(result).sentences[0].trans);
       });
   }
