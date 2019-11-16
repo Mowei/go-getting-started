@@ -19,14 +19,15 @@
     </div>
     <div style="text-align: center;">
         <a class="previous-page btn btn-outline-primary" href="/Page/"> << PREV </a>
-        <a class="btn btn-outline-primary" href="#header">{{ $Page }} </a>
+        <a class="btn btn-outline-primary" href="/"> HOME </a>
+        <a class="btn btn-outline-primary" href="#header">{{ $Page }}</a>
         <a class="next-page btn btn-outline-primary" href="/Page/"> NEXT >> </a>
     </div>
 </div>
 
 <script>
   var Page = {{ $Page }} ;
-  var MaxCount = 20 ;
+  var MaxCount = 10 ;
   var count = (Page-1) * MaxCount;
 
   $(function () {
