@@ -28,6 +28,15 @@ func main() {
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
 	})
+	router.GET("/Page/:number", func(c *gin.Context) {
+		number, err := strconv.Atoi(c.Param("number"))
+		if err != nil {
+			// handle error
+		}
+		c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
+			"Page": number,
+		})
+	})
 
 	router.GET("/Trans/:text", func(c *gin.Context) {
 		text := c.Param("text")
@@ -43,8 +52,19 @@ func main() {
 		c.JSON(200, string(body))
 	})
 
-	router.GET("/TopStories/:number", func(c *gin.Context) {
+	router.GET("/TopStories/:page/:number", func(c *gin.Context) {
+		page, err := strconv.Atoi(c.Param("page"))
+		if err != nil {
+			// handle error
+		}
+		if page <= 0 {
+			page = 1
+		}
+
 		number, err := strconv.Atoi(c.Param("number"))
+		if err != nil {
+			// handle error
+		}
 		resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty")
 		if err != nil {
 			// handle error
@@ -56,7 +76,7 @@ func main() {
 		}
 		var TopStories []int
 		json.Unmarshal([]byte(string(body)), &TopStories)
-		c.JSON(200, TopStories[0:number])
+		c.JSON(200, TopStories[(page-1)*number:page*number])
 	})
 
 	router.Run(":" + port)
